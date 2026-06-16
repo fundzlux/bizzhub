@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="center">
+  <div class="card" style="width:350px;">
+    <h2 style="text-align:center; color:#38bdf8; margin-bottom: 20px;">Create Account</h2>
+    
+    <div id="errorMsg" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fca5a5; font-size: 0.95rem;"></div>
+
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <input id="confirmPassword" type="password" placeholder="Confirm Password" required>
+
+    <button id="signupBtn" class="btn-primary" onclick="handleSignupClick()" style="margin-top: 15px;">Create Account</button>
+
+    <p style="text-align:center; margin-top:15px; color: #cbd5e1;">
+      Already have account? <a href="login.html" style="color:#38bdf8; text-decoration: none;">Login</a>
+    </p>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from "./firebase.js";
+  import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  console.log("Signup module loading...");
+
+  function showError(message) {
+    const errorDiv = document.getElementById("errorMsg");
+    const signupBtn = document.getElementById("signupBtn");
+    
+    if (signupBtn) signupBtn.disabled = false;
+    
+    if (errorDiv) {
+      errorDiv.innerHTML = `<strong style="color: #fca5a5;">⚠ ${message}</strong>`;
+      errorDiv.style.display = "block";
+    }
+    console.error("Error:", message);
+  }
+
+  function validateForm() {
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value.trim();
+    const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
+    
+    let errors = [];
+    
+    if (!email || !email.includes("@")) errors.push("Valid email required");
+    if (!password || password.length < 6) errors.push("Password must be at least 6 characters");
+    if (password !== confirmPassword) errors.push("Passwords do not match");
+    
+    if (errors.length > 0) {
+      showError(errors.join(" | "));
+      return false;
+    }
+    
+    return true;
+  }
+
+  window.handleSignupClick = async function() {
+    console.log("Signup clicked");
+    
+    if (!validateForm()) {
+      console.log("Validation failed");
+      return;
+    }
+    
+    const signupBtn = document.getElementById("signupBtn");
+    if (signupBtn) signupBtn.disabled = true;
+    
+    try {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      
+      console.log("Attempting signup with:", email);
+      console.log("Auth object:", auth);
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      console.log("User created:", user.email);
+      
+      // Create user profile in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        createdAt: serverTimestamp(),
+        plan: "free",
+        businessName: "",
+        phone: "",
+        address: ""
+      });
+      
+      console.log("User profile created in Firestore");
+      
+      // Create empty businesses collection entry
+      await setDoc(doc(db, "businesses", user.uid), {
+        email: user.email,
+        createdAt: serverTimestamp()
+      });
+      
+      console.log("Signup successful!");
+      
+      // Force immediate redirect without delay
+      window.location.replace("dashboard.html");
+      
+    } catch (error) {
+      console.error("Signup error:", error.code, error.message);
+      
+      let errorMessage = error.message;
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "Email already registered. Please login instead.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password too weak. Use at least 6 characters.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format.";
+      }
+      
+      showError(errorMessage);
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    if (confirmPasswordInput) {
+      confirmPasswordInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          window.handleSignupClick();
+        }
+      });
+    }
+    console.log("Signup module ready");
+  });
+</script>
+
+</body>
+</html>

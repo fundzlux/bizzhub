@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bizzhub</title>
+    <link rel="stylesheet" href="css/style.css"> 
+</head>
+<body>
+
+    <div class="main">
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #38bdf8;">Invoice Generator</h2>
+            
+            <div id="validationError" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fca5a5; font-size: 0.95rem;"></div>
+            
+            <input type="text" id="businessName" placeholder="Business Name" required>
+            <input type="text" id="customerName" placeholder="Customer Name" required>
+            <input type="text" id="productName" placeholder="Product Name" required>
+            <input type="number" id="quantity" placeholder="Quantity" required>
+            <input type="number" id="price" placeholder="Price" required>
+            
+            <button id="btnGenerate" class="btn-primary" onclick="window.generateInvoice()" style="margin-top: 15px;">Generate Invoice</button>
+            <button id="btnDownload" class="btn-primary" onclick="window.downloadPDF()" style="margin-top: 8px; background: #10b981;">Download PDF</button>
+            <button id="btnUpload" class="btn-primary" onclick="window.uploadLogo()" style="margin-top: 8px; background: #8b5cf6;">Upload Logo</button>
+        </div>
+
+        <br>
+
+        <div class="card" id="invoicePreview">
+            <h2>Invoice Preview</h2>
+        </div>
+    </div>
+
+    <div class="invoice-box"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module">
+        import { db, auth } from "./firebase.js";
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+        let business = "";
+        let customer = "";
+        let product = "";
+        let qty = 0;
+        let price = 0;
+        let total = 0;
+        let invoiceNumber = "";
+
+        // Expose to window
+        window.business = business;
+        window.customer = customer;
+        window.product = product;
+        window.qty = qty;
+        window.price = price;
+        window.total = total;
+        window.invoiceNumber = invoiceNumber;
+
+        function showError(message) {
+            const errorDiv = document.getElementById("validationError");
+            if (errorDiv) {
+                errorDiv.innerHTML = `<strong style="color: #fca5a5;">⚠ ${message}</strong>`;
+                errorDiv.style.display = "block";
+                errorDiv.style.background = "rgba(239, 68, 68, 0.2)";
+                errorDiv.style.borderColor = "#ef4444";
+            }
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById("validationError");
+            if (errorDiv) {
+                errorDiv.innerHTML = `<strong style="color: #86efac;">✓ ${message}</strong>`;
+                errorDiv.style.display = "block";
+                errorDiv.style.background = "rgba(16, 185, 129, 0.2)";
+                errorDiv.style.borderColor = "#10b981";
+            }
+        }
+
+        function validateForm() {
+            const bName = document.getElementById("businessName")?.value.trim();
+            const cName = document.getElementById("customerName")?.value.trim();
+            const pName = document.getElementById("productName")?.value.trim();
+            const qVal = document.getElementById("quantity")?.value.trim();
+            const pVal = document.getElementById("price")?.value.trim();
+            
+            let errors = [];
+            
+            if (!bName) errors.push("Business Name");
+            if (!cName) errors.push("Customer Name");
+            if (!pName) errors.push("Product Name");
+            if (!qVal || Number(qVal) <= 0) errors.push("Quantity (must be > 0)");
+            if (!pVal || Number(pVal) <= 0) errors.push("Price (must be > 0)");
+            
+            if (errors.length > 0) {
+                showError(`Fill these fields: ${errors.join(", ")}`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        window.generateInvoice = function() {
+            console.log("Generate Invoice clicked");
+            
+            if (!validateForm()) {
+                console.log("Validation failed");
+                return;
+            }
+            
+            try {
+                const bName = document.getElementById("businessName");
+                const cName = document.getElementById("customerName");
+                const pName = document.getElementById("productName");
+                const qVal = document.getElementById("quantity");
+                const pVal = document.getElementById("price");
+                const previewElement = document.getElementById("invoicePreview");
+
+                if (!previewElement) {
+                    console.error("Preview element not found");
+                    return;
+                }
+
+                business = bName.value.trim();
+                customer = cName.value.trim();
+                product = pName.value.trim();
+                qty = Number(qVal.value);
+                price = Number(pVal.value);
+                total = qty * price;
+                invoiceNumber = "INV-" + Date.now();
+
+                // Update window variables
+                window.business = business;
+                window.customer = customer;
+                window.product = product;
+                window.qty = qty;
+                window.price = price;
+                window.total = total;
+                window.invoiceNumber = invoiceNumber;
+
+                previewElement.innerHTML = `
+                    <h2>${business}</h2>
+                    <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+                    <p><strong>Customer:</strong> ${customer}</p>
+                    <p><strong>Product:</strong> ${product}</p>
+                    <p><strong>Quantity:</strong> ${qty}</p>
+                    <p><strong>Price:</strong> ₦${price.toFixed(2)}</p>
+                    <hr style="border: 1px solid #1f2937; margin: 15px 0;">
+                    <h3 style="color: #38bdf8;">Total: ₦${total.toFixed(2)}</h3>
+                `;
+                
+                showSuccess("Invoice generated successfully!");
+                console.log("Invoice generated successfully!");
+            } catch (error) {
+                console.error("Generate error:", error);
+                showError("Failed to generate invoice");
+            }
+        };
+
+        window.downloadPDF = function() {
+            console.log("Download PDF clicked");
+            
+            if (!validateForm()) {
+                console.log("Validation failed");
+                return;
+            }
+            
+            if (!business || !invoiceNumber) {
+                showError("Please generate an invoice first!");
+                return;
+            }
+            
+            try {
+                // Check if jsPDF is available
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    showError("PDF library loading... please wait and try again");
+                    console.warn("jsPDF not ready");
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(18);
+                doc.text(business, 20, 20);
+                doc.setFontSize(11);
+                doc.text(`Invoice #: ${invoiceNumber}`, 20, 35);
+                doc.text(`Customer: ${customer}`, 20, 50);
+                doc.text(`Product: ${product}`, 20, 65);
+                doc.text(`Quantity: ${qty}`, 20, 80);
+                doc.text(`Unit Price: ₦${price.toFixed(2)}`, 20, 95);
+                doc.setFontSize(14);
+                doc.text(`Total: ₦${total.toFixed(2)}`, 20, 120);
+                
+                doc.save(`Invoice-${invoiceNumber}.pdf`);
+                showSuccess("PDF downloaded successfully!");
+                console.log("PDF downloaded");
+            } catch (error) {
+                console.error('PDF Error:', error);
+                showError("Failed to generate PDF: " + error.message);
+            }
+        };
+
+        window.uploadLogo = function() {
+            console.log("Upload Logo clicked");
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    showError("Please login first");
+                    return;
+                }
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                        try {
+                            await setDoc(doc(db, "businesses", user.uid), {
+                                logo: event.target.result
+                            }, { merge: true });
+                            
+                            showSuccess("Logo uploaded successfully!");
+                            console.log("Logo uploaded");
+                        } catch (error) {
+                            console.error('Upload error:', error);
+                            showError("Failed to upload logo");
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                };
+                
+                input.click();
+            } catch (error) {
+                console.error('Upload error:', error);
+                showError("Upload failed: " + error.message);
+            }
+        };
+
+        // Load profile when user logs in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("User logged in");
+                try {
+                    const snap = getDoc(doc(db, "businesses", user.uid));
+                    snap.then(result => {
+                        if (result.exists()) {
+                            const data = result.data();
+                            if (document.getElementById("businessName")) {
+                                document.getElementById("businessName").value = data.businessName || "";
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Profile sync error:", error);
+                }
+            }
+        });
+
+        console.log("Invoice.js loaded successfully");
+    </script>
+</body>
+</html>

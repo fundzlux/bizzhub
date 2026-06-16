@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="center">
+  <div class="card" style="width:350px;">
+    <h2 style="text-align:center; color:#38bdf8; margin-bottom: 20px;">Login</h2>
+    
+    <div id="errorMsg" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fca5a5; font-size: 0.95rem;"></div>
+    
+    <div id="loadingMsg" style="display: none; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #86efac; font-size: 0.95rem; text-align: center;"><strong>⏳ Logging in...</strong></div>
+
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Password" required>
+
+    <button id="loginBtn" class="btn-primary" onclick="handleLoginClick()" style="margin-top: 15px;">Login</button>
+
+    <p style="text-align:center; margin-top:15px; color: #cbd5e1;">
+      No account? <a href="signup.html" style="color:#38bdf8; text-decoration: none;">Sign Up</a>
+    </p>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from "./firebase.js";
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  console.log("Login module loading...");
+
+  function showError(message) {
+    const errorDiv = document.getElementById("errorMsg");
+    const loadingDiv = document.getElementById("loadingMsg");
+    const loginBtn = document.getElementById("loginBtn");
+    
+    if (loadingDiv) loadingDiv.style.display = "none";
+    if (loginBtn) loginBtn.disabled = false;
+    
+    if (errorDiv) {
+      errorDiv.innerHTML = `<strong style="color: #fca5a5;">⚠ ${message}</strong>`;
+      errorDiv.style.display = "block";
+    }
+    console.error("Error:", message);
+  }
+
+  function showLoading() {
+    const errorDiv = document.getElementById("errorMsg");
+    const loadingDiv = document.getElementById("loadingMsg");
+    const loginBtn = document.getElementById("loginBtn");
+    
+    if (errorDiv) errorDiv.style.display = "none";
+    if (loadingDiv) loadingDiv.style.display = "block";
+    if (loginBtn) loginBtn.disabled = true;
+  }
+
+  function validateForm() {
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value.trim();
+    
+    let errors = [];
+    
+    if (!email || !email.includes("@")) errors.push("Valid email required");
+    if (!password || password.length < 6) errors.push("Password must be at least 6 characters");
+    
+    if (errors.length > 0) {
+      showError(errors.join(" | "));
+      return false;
+    }
+    
+    return true;
+  }
+
+  window.handleLoginClick = async function() {
+    console.log("Login clicked");
+    
+    if (!validateForm()) {
+      console.log("Validation failed");
+      return;
+    }
+    
+    showLoading();
+    
+    try {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      
+      console.log("Attempting login with:", email);
+      console.log("Auth object:", auth);
+      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      console.log("Login successful:", user.email);
+      
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          console.warn("User profile not found in Firestore");
+        }
+      } catch (docError) {
+        console.error("Error checking user doc:", docError);
+      }
+      
+      console.log("Redirecting to dashboard...");
+      // Force immediate redirect without delay
+      window.location.replace("dashboard.html");
+      
+    } catch (error) {
+      console.error("Login error:", error.code, error.message);
+      
+      let errorMessage = error.message;
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "Email not found. Please sign up first.";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password. Please try again.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many login attempts. Please try again later.";
+      }
+      
+      showError(errorMessage);
+    }
+  };
+
+  // Handle Enter key
+  document.addEventListener("DOMContentLoaded", () => {
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) {
+      passwordInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          window.handleLoginClick();
+        }
+      });
+    }
+    console.log("Login module ready");
+  });
+</script>
+
+</body>
+</html>

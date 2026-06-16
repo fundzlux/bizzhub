@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pro Pack Details</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #0f172a;
+      color: #cbd5e1;
+    }
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 30px;
+      background: rgba(15, 23, 42, 0.93);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+    .page-title {
+      color: #38bdf8;
+      margin-bottom: 10px;
+      font-size: 2.4rem;
+      text-align: center;
+    }
+    .page-subtitle {
+      color: #94a3b8;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 1rem;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      color: #38bdf8;
+      margin-bottom: 12px;
+    }
+    .section p,
+    .section li {
+      color: #cbd5e1;
+      line-height: 1.8;
+    }
+    .details-list {
+      list-style: disc inside;
+      margin-left: 16px;
+    }
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .btn-primary,
+    .btn-secondary {
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
+      color: #000;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .btn-primary:hover,
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(56, 189, 248, 0.2);
+    }
+    .note-box {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 20px;
+      border-radius: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">Pro Pack Details</h1>
+    <p class="page-subtitle">This page is reserved for your Pro plan package details and payment information.</p>
+
+    <div class="section">
+      <h2>What to include here</h2>
+      <p>Use this page to add your Pro package details, pricing, billing terms, and upgrade benefits. Replace the placeholder content below with your actual pack information.</p>
+      <ul class="details-list">
+        <li>Pro price and billing frequency</li>
+        <li>Features included in the Pro package</li>
+        <li>Payment methods and checkout instructions</li>
+        <li>Support and cancellation policy</li>
+      </ul>
+    </div>
+
+    <div class="section note-box">
+      <h2>Placeholder section</h2>
+      <p>Example pack details will go here. Right now it is only a placeholder so you can edit the page and add your own Pro plan details later.</p>
+      <p><strong>Feature list:</strong></p>
+      <ul class="details-list">
+        <li>Unlimited products</li>
+        <li>Advanced dashboard</li>
+        <li>Invoice generator</li>
+        <li>Advanced reporting and analytics</li>
+        <li>Priority support</li>
+      </ul>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-primary" onclick="window.location.href='upgrade.html'">Back to Upgrade Plans</button>
+      <button class="btn-secondary" onclick="window.location.href='../dashboard.html'">Go to Dashboard</button>
+    </div>
+  </div>
+</body>
+</html>

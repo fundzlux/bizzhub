@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upgrade Plan</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .upgrade-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .upgrade-header h1 {
+      color: #38bdf8;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .upgrade-header p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+
+    .plan-card {
+      background: rgba(17, 24, 39, 0.85);
+      border: 2px solid #1f2937;
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .plan-card.featured {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
+      transform: scale(1.05);
+      box-shadow: 0 15px 40px rgba(56, 189, 248, 0.2);
+    }
+
+    .plan-card:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+    }
+
+    .plan-badge {
+      display: inline-block;
+      background: #38bdf8;
+      color: black;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .plan-card h2 {
+      color: #38bdf8;
+      font-size: 1.8rem;
+      margin: 10px 0;
+    }
+
+    .plan-price {
+      font-size: 2.5rem;
+      color: white;
+      margin: 15px 0 5px 0;
+      font-weight: bold;
+    }
+
+    .plan-price span {
+      font-size: 1rem;
+      color: #cbd5e1;
+    }
+
+    .plan-billing {
+      color: #94a3b8;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+
+    .plan-features {
+      text-align: left;
+      margin: 20px 0;
+      flex-grow: 1;
+    }
+
+    .plan-features li {
+      color: #cbd5e1;
+      padding: 10px 0;
+      border-bottom: 1px solid #1f2937;
+      list-style: none;
+    }
+
+    .plan-features li:last-child {
+      border-bottom: none;
+    }
+
+    .plan-features li.included {
+      color: #10b981;
+    }
+
+    .plan-features li.locked {
+      color: #ef4444;
+      text-decoration: line-through;
+    }
+
+    .plan-button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .btn-upgrade {
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
+      color: black;
+    }
+
+    .btn-upgrade:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-current {
+      background: #1f2937;
+      color: #cbd5e1;
+      cursor: default;
+    }
+
+    .comparison-table {
+      width: 100%;
+      margin-top: 40px;
+      border-collapse: collapse;
+      background: rgba(17, 24, 39, 0.85);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .comparison-table th {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    .comparison-table td:first-child {
+      text-align: left;
+      color: #cbd5e1;
+    }
+
+    .comparison-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .faq-section {
+      margin-top: 50px;
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 30px;
+    }
+
+    .faq-section h3 {
+      color: #38bdf8;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .faq-item {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .faq-question {
+      color: #38bdf8;
+      font-weight: bold;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .faq-answer {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification.success {
+      background: #10b981;
+      border: 1px solid #059669;
+    }
+
+    .notification.error {
+      background: #ef4444;
+      border: 1px solid #dc2626;
+    }
+
+    .notification.info {
+      background: #38bdf8;
+      border: 1px solid #0284c7;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .back-button {
+      display: inline-block;
+      color: #38bdf8;
+      text-decoration: none;
+      margin-bottom: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      color: #06b6d4;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="notification"></div>
+
+<div class="main">
+
+  <a class="back-button" onclick="goBack()">← Back to Settings</a>
+
+  <div class="upgrade-header">
+    <h1>💎 Choose Your Plan</h1>
+    <p>Select the perfect plan for your business</p>
+  </div>
+
+  <!-- Plans -->
+  <div class="plans-grid">
+
+    <!-- FREE PLAN -->
+    <div class="plan-card" id="freePlan">
+      <h2>Free</h2>
+      <div class="plan-price">$0<span>/month</span></div>
+      <div class="plan-billing">Forever free</div>
+
+      <ul class="plan-features">
+        <li class="included">✔ Up to 50 Products</li>
+        <li class="included">✔ Basic Dashboard</li>
+        <li class="included">✔ Customer Management</li>
+        <li class="included">✔ Basic Sales Tracking</li>
+        <li class="locked">❌ Invoice Generator (Locked)</li>
+        <li class="locked">❌ Advanced Reports (Locked)</li>
+        <li class="locked">❌ AI Insights (Locked)</li>
+      </ul>
+
+      <button class="plan-button btn-current" id="freeBtn" onclick="selectPlan('free')">
+        Your Current Plan
+      </button>
+    </div>
+
+    <!-- PRO PLAN -->
+    <div class="plan-card featured" id="proPlan">
+      <div class="plan-badge">⭐ MOST POPULAR</div>
+      <h2>Pro</h2>
+      <div class="plan-price">$25<span>/month</span></div>
+      <div class="plan-billing">Billed monthly, cancel anytime</div>
+
+      <ul class="plan-features">
+        <li class="included">✔ Unlimited Products</li>
+        <li class="included">✔ Advanced Dashboard</li>
+        <li class="included">✔ Full Customer Management</li>
+        <li class="included">✔ Invoice Generator</li>
+        <li class="included">✔ Advanced Reports</li>
+        <li class="included">✔ Sales Analytics</li>
+        <li class="included">✔ Priority Support</li>
+      </ul>
+
+      <button class="plan-button btn-upgrade" id="proBtn" onclick="goProDetails()">
+        Upgrade to Pro
+      </button>
+    </div>
+
+    <!-- ENTERPRISE PLAN -->
+    <div class="plan-card" id="enterprisePlan">
+      <h2>Enterprise</h2>
+      <div class="plan-price">Custom</div>
+      <div class="plan-billing">Contact us for pricing</div>
+
+      <ul class="plan-features">
+        <li class="included">✔ Everything in Pro</li>
+        <li class="included">✔ AI Insights</li>
+        <li class="included">✔ Custom Integrations</li>
+        <li class="included">✔ Dedicated Account Manager</li>
+        <li class="included">✔ API Access</li>
+        <li class="included">✔ Custom Training</li>
+        <li class="included">✔ 24/7 Premium Support</li>
+      </ul>
+
+      <button class="plan-button btn-upgrade" id="enterpriseBtn" onclick="selectPlan('enterprise')">
+        Contact Sales
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Comparison Table -->
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Free</th>
+        <th>Pro</th>
+        <th>Enterprise</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Products</td>
+        <td>Up to 50</td>
+        <td>Unlimited</td>
+        <td>Unlimited</td>
+      </tr>
+      <tr>
+        <td>Invoice Generator</td>
+        <td>❌</td>
+        <td>✔</td>
+        <td>✔</td>
+      </tr>
+      <tr>
+        <td>Advanced Reports</td>
+        <td>❌</td>
+        <td>✔</td>
+        <td>✔</td>
+      </tr>
+      <tr>
+        <td>AI Insights</td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>✔</td>
+      </tr>
+      <tr>
+        <td>API Access</td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>✔</td>
+      </tr>
+      <tr>
+        <td>Support</td>
+        <td>Community</td>
+        <td>Email & Chat</td>
+        <td>24/7 Dedicated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FAQ Section -->
+  <div class="faq-section">
+    <h3>❓ Frequently Asked Questions</h3>
+    <div class="faq-item">
+      <div class="faq-question">Can I change my plan anytime?</div>
+      <div class="faq-answer">Yes! You can upgrade or downgrade your plan anytime. Changes take effect on your next billing cycle.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">What payment methods do you accept?</div>
+      <div class="faq-answer">We accept all major credit cards, PayPal, and bank transfers for enterprise customers.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">Is there a free trial for Pro?</div>
+      <div class="faq-answer">Yes! New users get 7 days of Pro access free. No credit card required.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">Do you offer discounts for annual billing?</div>
+      <div class="faq-answer">Yes! Pay yearly and get 20% off. Contact our sales team for enterprise discounts.</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { auth, db } from "../firebase.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  console.log("Upgrade page loading...");
+
+  // Notification system
+  function showNotification(message, type = "info", duration = 3000) {
+    const container = document.getElementById("notification");
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, duration);
+  }
+
+  // Go back to settings
+  window.goBack = function() {
+    window.location.href = "../settings.html";
+  };
+
+  window.goProDetails = function() {
+    window.location.href = "pro-details.html";
+  };
+
+  // Check authentication
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      console.log("Not authenticated, redirecting to login");
+      window.location.replace("../login.html");
+      return;
+    }
+
+    console.log("User authenticated:", user.email);
+
+    // Get current plan
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const currentPlan = userDoc.data().plan || "free";
+        console.log("Current plan:", currentPlan);
+
+        // Update button based on current plan
+        if (currentPlan === "pro") {
+          document.getElementById("proBtn").textContent = "Your Current Plan";
+          document.getElementById("proBtn").className = "plan-button btn-current";
+          document.getElementById("proBtn").onclick = null;
+        } else if (currentPlan === "enterprise") {
+          document.getElementById("enterpriseBtn").textContent = "Your Current Plan";
+          document.getElementById("enterpriseBtn").className = "plan-button btn-current";
+          document.getElementById("enterpriseBtn").onclick = null;
+        }
+      }
+    } catch (error) {
+      console.error("Error loading plan:", error);
+    }
+  });
+
+  // Select plan
+  window.selectPlan = async function(planName) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      if (planName === "pro") {
+        showNotification("Processing Pro upgrade... Redirecting to payment...", "info");
+        
+        // Update plan in Firestore
+        await updateDoc(doc(db, "users", user.uid), {
+          plan: "pro",
+          planUpgradeDate: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // In real implementation, redirect to payment gateway
+        setTimeout(() => {
+          showNotification("✓ Plan upgraded to Pro!", "success");
+          setTimeout(() => {
+            window.location.replace("../dashboard.html");
+          }, 1500);
+        }, 1000);
+      } else if (planName === "enterprise") {
+        showNotification("Contacting sales team...", "info");
+        // In real implementation, open contact form or redirect to sales page
+        alert("Our sales team will contact you soon at " + user.email);
+      } else if (planName === "free") {
+        showNotification("You're already on the Free plan", "info");
+      }
+    } catch (error) {
+      console.error("Error selecting plan:", error);
+      showNotification("Error processing upgrade: " + error.message, "error");
+    }
+  };
+
+  console.log("Upgrade page ready");
+</script>
+
+</body>
+</html>

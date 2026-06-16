@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sales</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<script type="module" src="protect.js"></script>
+
+<div class="main">
+  <h1 style="color:#38bdf8;">Sales Management</h1>
+
+  <div class="card">
+    <h2 style="margin-bottom: 15px; color: #cbd5e1;">Add New Sale</h2>
+    
+    <div id="validationError" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fca5a5; font-size: 0.95rem;"></div>
+
+    <input id="product" placeholder="Product Name" required>
+    <input id="qty" placeholder="Quantity" type="number" required>
+    <input id="price" placeholder="Price" type="number" required>
+    <input type="file" id="imageFile" accept="image/*">
+    
+    <button class="btn-primary" onclick="window.addSale()" style="margin-top: 15px;">Add Sale</button>
+    <button onclick="window.goInvoice()" class="btn-primary" style="margin-top: 8px; background: #f59e0b;">Generate Invoice</button>
+  </div>
+
+  <br>
+
+  <div class="card">
+    <h2 style="margin-bottom: 15px; color: #cbd5e1;">Recent Sales</h2>
+    <div id="salesList"></div>
+  </div>
+</div>
+
+<script type="module" src="sales.js"></script>
+
+</body>
+</html>

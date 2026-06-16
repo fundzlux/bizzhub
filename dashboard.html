@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Loading state -->
+<div id="loadingState" style="display: flex; align-items: center; justify-content: center; height: 100vh; background: radial-gradient(circle at top, #38bdf8 0%, transparent 40%), radial-gradient(circle at bottom, #1e293b 0%, #020617 70%), #0f172a;">
+  <div style="text-align: center; color: #38bdf8;">
+    <h2>Loading Dashboard...</h2>
+    <p style="color: #cbd5e1; margin-top: 10px;">Verifying your session</p>
+  </div>
+</div>
+
+<!-- Main content (hidden until auth verified) -->
+<div id="dashboardContent" style="display: none;">
+<div class="main">
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="inventory.html" class="gold-card" style="flex: 1; min-width: 100px; margin: 0; text-align: center;">📦 Inventory</a>
+    <a href="sales.html" class="gold-card" style="flex: 1; min-width: 100px; margin: 0; text-align: center;">💰 Sales</a>
+    <a href="customers.html" class="gold-card" style="flex: 1; min-width: 100px; margin: 0; text-align: center;">👥 Customers</a>
+  </div>
+
+  <h1 style="color:#38bdf8;">Business Dashboard</h1>
+
+  <div class="cards">
+
+    <div class="card">
+      <h3>Total Sales</h3>
+      <h2 id="totalSales">0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Total Revenue</h3>
+      <h2 id="totalRevenue">₦0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Total Products</h3>
+      <h2 id="totalProducts">0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Total Customers</h3>
+      <h2 id="totalCustomers">0</h2>
+    </div>
+
+  </div>
+
+  <br>
+
+  <div class="card">
+    <h3>📈 Sales Overview</h3>
+    <canvas id="chart" width="400" height="200"></canvas>
+  </div>
+
+</div>
+<div class="card">
+  <h3>Low Stock Alerts</h3>
+  <div id="lowStockList"></div>
+</div>
+<div class="cards">
+
+  <div class="card">
+    <h3>Business Health</h3>
+    <h1 id="healthScore">0</h1>
+  </div>
+
+  <div class="card">
+    <h3>Best Selling Product</h3>
+    <p id="bestProduct">Loading...</p>
+  </div>
+
+  <div class="card">
+    <h3>Top Customer</h3>
+    <p id="topCustomer">Loading...</p>
+  </div>
+
+</div>
+
+<div class="card">
+  <h3>Low Stock Alerts</h3>
+  <div id="lowStock"></div>
+</div>
+<div class="card">
+
+  <h3>Business AI</h3>
+
+  <input id="question">
+
+  <button onclick="askAI()">
+    Ask
+  </button>
+
+  <p id="answer"></p>
+
+</div>
+<button onclick="logout()" class="btn-primary">
+Logout
+</button>
+
+</div>
+</div>
+<!-- End dashboardContent -->
+
+<script type="module">
+  import { auth } from "./firebase.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+  console.log("Dashboard auth check starting...");
+  const loadingState = document.getElementById("loadingState");
+  const dashboardContent = document.getElementById("dashboardContent");
+
+  // Check authentication
+  onAuthStateChanged(auth, (user) => {
+    console.log("Auth state changed:", user?.email);
+    
+    if (!user) {
+      console.log("Not authenticated, redirecting to login");
+      setTimeout(() => {
+        window.location.replace("login.html");
+      }, 500);
+    } else {
+      console.log("User authenticated:", user.email);
+      // Show dashboard, hide loading
+      if (loadingState) loadingState.style.display = "none";
+      if (dashboardContent) dashboardContent.style.display = "block";
+    }
+  });
+
+  // Logout function
+  window.logout = async function() {
+    try {
+      await signOut(auth);
+      console.log("Logged out successfully");
+      window.location.replace("login.html");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Error logging out");
+    }
+  };
+
+  console.log("Dashboard ready");
+</script>
+
+</body>
+</html>
